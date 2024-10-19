@@ -2,6 +2,7 @@ package com.bookstore.common.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.io.Serializable;
@@ -17,7 +18,7 @@ import java.io.Serializable;
 public class OrderItem extends  Common<Integer>  {
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
-    @JoinColumn(name = "ORDER_ID")
+    @JoinColumn(name = "ORDER_ID" , nullable = true)
     private Order order;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
@@ -41,4 +42,6 @@ public class OrderItem extends  Common<Integer>  {
         this.book = book;
         this.quantity = quantity;
     }
+
+
 }

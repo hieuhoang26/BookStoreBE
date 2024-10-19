@@ -29,6 +29,7 @@ public class BookSearchRepository {
     EntityManager entityManager;
     private static final String LIKE_FORMAT = "%%%s%%";
     String SORT_BY = "(\\w+?)(:)(.*)";
+//    String SORT_BY = "(\\w+)(?::(\\w+))?";
 
 
     /**
@@ -40,37 +41,54 @@ public class BookSearchRepository {
      * @param sortBy
      * @return user book with sorting and paging
      */
+    public PageResponse getAll(Integer pageNo, Integer pageSize, String sortBy, String search, Integer minPrice, Integer maxPrice, Integer category) {
+        log.info("Execute search with keyword={}, category={}, minPrice={}, maxPrice={}", search, category, minPrice, maxPrice);
 
-    public PageResponse getAll(int pageNo, int pageSize, String search, String sortBy) {
-        log.info("Execute search user with keyword={}", search);
+        StringBuilder p1 = new StringBuilder("SELECT b.id, b.title, b.price, b.author, b.currentQuantity, b.soldQuantity ");
+        StringBuilder p2 = new StringBuilder("FROM Book b JOIN b.categories c WHERE 1=1 ");
 
-//        StringBuilder sql = new StringBuilder("SELECT new com.bookstore.modules.book.dto.BookDto(b.id, b.title, b.price, b.author, b.currentQuantity, b.soldQuantity) " +
-        StringBuilder sql = new StringBuilder("SELECT b.id, b.title, b.price, b.author, b.currentQuantity, b.soldQuantity " +
-                "FROM Book b WHERE 1=1 ");
         if (StringUtils.hasLength(search)) {
-//            sql.append(" AND lower(b.title) like lower(:title)");
-//            sql.append(" OR lower(b.author) like lower(:author)");
-            sql.append(" AND (lower(b.title) like lower(:title) OR lower(b.author) like lower(:author))");
-
+            p2.append(" AND (lower(b.title) like lower(:title) OR lower(b.author) like lower(:author))");
         }
+
+        if (minPrice != null) {
+            p2.append(" AND b.price >= :minPrice");
+        }
+        if (maxPrice != null) {
+            p2.append(" AND b.price <= :maxPrice");
+        }
+        if (category != null) {
+            p2.append(" AND c.id = :categoryId");
+        }
+
         if (StringUtils.hasLength(sortBy)) {
-            // firstName:asc|desc
             Pattern pattern = Pattern.compile(SORT_BY);
             Matcher matcher = pattern.matcher(sortBy);
             if (matcher.find()) {
-                sql.append(String.format(" ORDER BY b.%s %s", matcher.group(1), matcher.group(3)));
+                p2.append(String.format(" ORDER BY b.%s %s", matcher.group(1), matcher.group(3)));
             }
         }
 
-        // Get list of users
-        Query selectQuery = entityManager.createQuery(sql.toString());
-        //set param
+        String queryStr = p1.append(p2).toString();
+        Query selectQuery = entityManager.createQuery(queryStr);
+
         if (StringUtils.hasLength(search)) {
-            selectQuery.setParameter("title", "%" + search + "%"); //Like ~ %search%
-            selectQuery.setParameter("author", String.format(LIKE_FORMAT, search));
+            selectQuery.setParameter("title", "%" + search + "%");
+            selectQuery.setParameter("author", "%" + search + "%");
         }
-        selectQuery.setFirstResult(pageNo); // offset -> position get
-        selectQuery.setMaxResults(pageSize); // number of records getted
+        if (minPrice != null) {
+            selectQuery.setParameter("minPrice", minPrice);
+        }
+        if (maxPrice != null) {
+            selectQuery.setParameter("maxPrice", maxPrice);
+        }
+        if (category != null) {
+            selectQuery.setParameter("categoryId", category);
+        }
+
+        int firstResult = (pageNo - 1) * pageSize;
+        selectQuery.setFirstResult(firstResult);
+        selectQuery.setMaxResults(pageSize);
 
         List<?> books = selectQuery.getResultList();
         List<BookDto> bookDtoList = new ArrayList<>();
@@ -89,31 +107,45 @@ public class BookSearchRepository {
             bookDtoList.add(bookDto);
         }
 
+        // Count records
+        StringBuilder countQueryStr = new StringBuilder("SELECT COUNT(b) ");
+        StringBuilder countQueryCondition = new StringBuilder("FROM Book b JOIN b.categories c WHERE 1=1 ");
 
-        // Count record
-//        StringBuilder sqlCountQuery = new StringBuilder("SELECT COUNT(*) FROM User u");
-        StringBuilder sqlCountQuery = new StringBuilder("SELECT COUNT(*) " +
-                "FROM Book b");
         if (StringUtils.hasLength(search)) {
-            sqlCountQuery.append(" WHERE lower(b.title) like lower(?1)");
-            sqlCountQuery.append(" OR lower(b.author) like lower(?2)");
+            countQueryCondition.append(" AND (lower(b.title) like lower(:title) OR lower(b.author) like lower(:author))");
+        }
+        if (minPrice != null) {
+            countQueryCondition.append(" AND b.price >= :minPrice");
+        }
+        if (maxPrice != null) {
+            countQueryCondition.append(" AND b.price <= :maxPrice");
+        }
+        if (category != null) {
+            countQueryCondition.append(" AND c.id = :categoryId");
         }
 
-        Query countQuery = entityManager.createQuery(sqlCountQuery.toString());
+        countQueryStr.append(countQueryCondition);
+        Query countQuery = entityManager.createQuery(countQueryStr.toString());
+
         if (StringUtils.hasLength(search)) {
-            countQuery.setParameter(1, String.format(LIKE_FORMAT, search));
-            countQuery.setParameter(2, String.format(LIKE_FORMAT, search));
-            countQuery.getSingleResult();
+            countQuery.setParameter("title", "%" + search + "%");
+            countQuery.setParameter("author", "%" + search + "%");
+        }
+        if (minPrice != null) {
+            countQuery.setParameter("minPrice", minPrice);
+        }
+        if (maxPrice != null) {
+            countQuery.setParameter("maxPrice", maxPrice);
+        }
+        if (category != null) {
+            countQuery.setParameter("categoryId", category);
         }
 
         Long totalElements = (Long) countQuery.getSingleResult();
 
-
         log.info("totalElements={}", totalElements);
-        Pageable pageable = PageRequest.of(pageNo, pageSize); //đưa sort vào k đc
-
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
         Page<?> page = new PageImpl<>(bookDtoList, pageable, totalElements);
-
         return PageResponse.builder()
                 .page(pageNo)
                 .size(pageSize)
@@ -121,5 +153,6 @@ public class BookSearchRepository {
                 .items(bookDtoList)
                 .build();
     }
+
 
 }

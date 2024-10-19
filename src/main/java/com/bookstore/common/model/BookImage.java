@@ -17,9 +17,6 @@ public class BookImage extends  Common<Integer>{
     @Lob
     @Column(name = "image_path")
     String imagePath;
-
-
-
     /* <------------------ Mapping --------------------> */
 
     //(n-1) BookImage

@@ -2,23 +2,24 @@ package com.bookstore.common.service.serviceImp;
 
 
 import com.bookstore.common.dto.response.ResponseData;
-import com.bookstore.common.dto.response.ResponseError;
+import com.bookstore.common.exception.ResourceNotFoundExcep;
 import com.bookstore.common.model.Auth.Role;
-import com.bookstore.common.model.Auth.UserHasRole;
 import com.bookstore.common.model.User;
 import com.bookstore.common.repository.UserRepository;
-import com.bookstore.common.security.service.UserDetailServiceImp;
+import com.bookstore.common.security.service.Imp.UserDetailServiceImp;
 import com.bookstore.common.service.AuthService;
 import com.bookstore.common.security.service.JwtService;
 import com.bookstore.common.service.RoleService;
+import com.bookstore.common.service.ShopService;
 import com.bookstore.common.service.UserService;
 import com.bookstore.modules.auth.dto.LogInRequest;
 import com.bookstore.modules.auth.dto.TokenRefreshResponse;
 import com.bookstore.modules.auth.dto.TokenResponse;
 import com.bookstore.modules.auth.dto.SignUpRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,7 +31,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import static org.springframework.http.HttpHeaders.REFERER;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,7 @@ public class AuthServiceImp implements AuthService {
     final PasswordEncoder passwordEncoder;
     final JwtService jwtService;
     final UserService userService;
+    final ShopService shopService;
     final RoleService roleService;
     final UserDetailServiceImp userDetailServiceImp;
 
@@ -57,13 +60,24 @@ public class AuthServiceImp implements AuthService {
         List<String> roleNames = user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        return TokenResponse.builder()
+        TokenResponse.TokenResponseBuilder responseBuilder = TokenResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .roles(roleNames)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .roles(roleNames)
-                .build();
+                .message("Login success");
+
+        // Check if the user has the "ROLE_SHOP" role and update the shopId if applicable
+        if (roleNames.contains("ROLE_Shop")) {
+            responseBuilder.shopId(user.getShop().getId());
+        }
+        else {
+            responseBuilder.shopId(null);
+        }
+
+        // Build and return the response
+        return responseBuilder.build();
     }
 
     @Override
@@ -82,8 +96,14 @@ public class AuthServiceImp implements AuthService {
         return new ResponseData<>(HttpStatus.OK.value(), "Sign Up sucess");
     }
 
+
+
     @Override
-    public TokenRefreshResponse refresh(String refreshToken) {
+    public TokenRefreshResponse refresh(HttpServletRequest request) {
+        final String refreshToken = request.getHeader(REFERER);
+        if (StringUtils.isBlank(refreshToken)) {
+            throw new ResourceNotFoundExcep("Token must be not blank");
+        }
         String username = jwtService.extractUsername(refreshToken);
         UserDetails user = userDetailServiceImp.loadUserByUsername(username);
         if (jwtService.isValid(refreshToken, user)) {
@@ -98,4 +118,5 @@ public class AuthServiceImp implements AuthService {
         }
 
     }
+
 }

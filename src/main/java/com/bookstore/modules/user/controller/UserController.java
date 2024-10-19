@@ -30,15 +30,17 @@ public class UserController {
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .password(user.getPassword())
+//                .password(user.getPassword())
                 .phoneNumber(user.getPhoneNumber())
                 .email(user.getEmail())
+                .dateOfBirth(user.getDateOfBirth())
+                .avatar(user.getAvatar())
                 .build();
         return new ResponseData(HttpStatus.OK.value(), "User Info",userDto );
     }
 
     @PutMapping(value = Uri.USER + "/{id}")
-    public ResponseData<?> UpdateUser(@PathVariable Integer id, @Valid @RequestBody UserUpdateDto userUpdate) {
+    public ResponseData<?> UpdateUser(@PathVariable Integer id, @ModelAttribute UserUpdateDto userUpdate) {
         userService.updateUser(id, userUpdate);
         return new ResponseData<>(HttpStatus.OK.value(), "update user success");
     }

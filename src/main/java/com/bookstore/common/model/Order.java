@@ -19,31 +19,28 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-public class Order extends  Common<Integer>{
+public class Order extends Common<Integer> {
+    @NotNull
+    @Column(name = "NAME")
+    private String name;
+
+    @NotNull
+    @Column(name = "PHONE")
+    private String phone;
+
+    @NotNull
+    @Column(name = "SHOPPING_ADDRESS")
+    private String shoppingAddress;
+
     @NotNull
     @PositiveOrZero
     //@Digits(integer = 10, fraction = 3)
     @Column(name = "TOTAL_PRICE")
     private Double totalPrice;
 
-    @NotNull
-    @Column(name = "ORDER_DATTE")
-    private LocalDate orderDate;
 
-    @NotBlank
-    @Column(name = "SHOPPING_ADDRESS")
-    private String shoppingAddress;
-
-    @NotBlank
     @Column(name = "ORDER_STATUS")
     private String orderStatus;
-
-
-    @Column(name = "is_confirm")
-    Boolean isConfirm;
-
-    @Column(name = "is_evaluate")
-    Boolean isEvaluate;
 
 
     //    (n-1) user
@@ -69,15 +66,16 @@ public class Order extends  Common<Integer>{
     public String toString() {
         return "Order{" +
                 "totalPrice=" + totalPrice +
-                ", orderDate=" + orderDate +
+//                ", orderDate=" + orderDate +
                 ", shoppingAddress='" + shoppingAddress + '\'' +
                 ", orderStatus='" + orderStatus + '\'' +
-                ", isConfirm=" + isConfirm +
-                ", isEvaluate=" + isEvaluate +
+//                ", isConfirm=" + isConfirm +
+//                ", isEvaluate=" + isEvaluate +
                 '}';
     }
-    public void addOrderItem(OrderItem orderItem){
-        if(orderItems == null) orderItems = new HashSet<>();
+
+    public void addOrderItem(OrderItem orderItem) {
+        if (orderItems == null) orderItems = new HashSet<>();
         orderItems.add(orderItem);
         orderItem.setOrder(this);
     }

@@ -8,7 +8,11 @@ spring:
     url: jdbc:mysql://localhost:3306/book_new
     username: root
     password: 12345678
-
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1MB
+      max-request-size: 1MB
   jpa:
     properties:
       hibernate:
@@ -19,6 +23,7 @@ spring:
 springdoc:
   api-docs:
     enabled: true
+
   swagger-ui:
     enabled: true
 

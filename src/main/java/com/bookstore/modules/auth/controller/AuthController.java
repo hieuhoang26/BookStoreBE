@@ -7,6 +7,7 @@ import com.bookstore.modules.auth.dto.LogInRequest;
 import com.bookstore.modules.auth.dto.TokenRefreshResponse;
 import com.bookstore.modules.auth.dto.TokenResponse;
 import com.bookstore.modules.auth.dto.SignUpRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +32,13 @@ public class AuthController {
     public ResponseEntity<ResponseData> SignUp(@Valid @RequestBody SignUpRequest signUpRequest) {
         return new ResponseEntity<>(authService.signUp(signUpRequest), HttpStatus.OK);
     }
+    @PostMapping(value = {Uri.LOGOUT})
+    public ResponseEntity<ResponseData> Logout() {
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @PostMapping(value = {Uri.REFRESH})
-    public ResponseEntity<?> Refresh(String refreshToken) {
+    public ResponseEntity<?> Refresh(HttpServletRequest  refreshToken) {
         TokenRefreshResponse data = authService.refresh(refreshToken);
         if (data != null) {
             return new ResponseEntity<>(data, HttpStatus.OK);

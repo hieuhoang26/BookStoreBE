@@ -1,6 +1,6 @@
 package com.bookstore.modules.order.dto.request;
 
-import jakarta.persistence.Embeddable;
+import com.bookstore.modules.cart.dto.CartRequest;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
@@ -16,18 +16,22 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderRequest implements Serializable {
-    @NotNull
-    Integer userId;
+    @NotNull Integer userId;
 
-    @NotNull
-    Integer shopId;
-
-    @NotNull
-    @PositiveOrZero
-    Double totalPrice;
+    @NotNull @PositiveOrZero Double totalPrice;
 
     String address;
 
+    Integer statusOrder;
 
-    List<OrderItemRequest> orderItems;
+    List<Item> orderItems;
+
+    @Setter
+    @Getter
+    public static class Item {
+        private Integer bookId;
+        @NotNull
+        private Integer shopId;
+        private Integer quantity;
+    }
 }

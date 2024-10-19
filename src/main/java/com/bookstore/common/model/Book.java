@@ -66,7 +66,7 @@ public class Book extends Common<Integer>{
     // (1-n) BookImage
     // Delete Book Delete Image
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "book", cascade = CascadeType.ALL,orphanRemoval = true)
     Set<BookImage> bookImages;
 
 
@@ -81,7 +81,8 @@ public class Book extends Common<Integer>{
     /* 1-n OrderItem */
     /* Delete Book, Delete Order */
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "book", cascade = CascadeType.PERSIST)
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "book", cascade = CascadeType.PERSIST)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "book", cascade = CascadeType.ALL)
     Set<OrderItem> orderItems;
 
     /* 1-n Review */
@@ -95,6 +96,11 @@ public class Book extends Common<Integer>{
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "book", cascade = CascadeType.ALL)
     Set<Rate> rates;
+
+    /* To Cart */
+    @JsonIgnore
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    Set<CartItem> cartItems ;
 
     /*-----------Convert Method--------------------*/
     public void addCategory(Category category) {

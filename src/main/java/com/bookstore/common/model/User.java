@@ -39,6 +39,12 @@ public class User extends  Common<Integer> implements UserDetails, Serializable 
     @Column(name = "PHONE_NUMBER")
     private String phoneNumber;
 
+    @Column(name = "DATE_OF_BIRTH")
+    private Date dateOfBirth;
+
+    @Column(name = "AVATAR")
+    private String avatar;
+
     //    @Column(name = "type")
 //    String type;
 //
@@ -91,6 +97,11 @@ public class User extends  Common<Integer> implements UserDetails, Serializable 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<GroupHasUser> groups = new HashSet<>();
+
+    //    (1-1) Cart
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Cart cart;
 
 
 

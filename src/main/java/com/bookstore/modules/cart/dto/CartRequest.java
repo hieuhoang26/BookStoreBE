@@ -1,5 +1,4 @@
-package com.bookstore.modules.order.dto.request;
-import jakarta.persistence.Embeddable;
+package com.bookstore.modules.cart.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
@@ -13,7 +12,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderItemRequest implements Serializable {
+public class CartRequest implements Serializable {
+    @NotNull
+    Integer userId;
     @NotNull
     Integer bookId;
 

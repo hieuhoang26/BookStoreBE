@@ -20,16 +20,16 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateBookRequest {
-    @NotBlank
+//    @NotBlank
     @Length(min = 1)
     String title;
 
-    @NotNull
-    @PositiveOrZero
+//    @NotNull
+//    @PositiveOrZero
     Double price;
 
-    @NotNull
-    @Range(max = 10000, min = 0)
+//    @NotNull
+//    @Range(max = 10000, min = 0)
     Integer currentQuantity;
     Integer soldQuantity;
 
@@ -42,10 +42,10 @@ public class CreateBookRequest {
     String coverType;
     Integer numberOfPages;
     String description;
-    @NotNull
+//    @NotNull
     String author;
-    @NotNull
+//    @NotNull
     List<Integer> category;
-    @NotEmpty
+//    @NotEmpty
     List<MultipartFile> images;
 }
