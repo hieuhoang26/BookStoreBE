@@ -10,7 +10,7 @@ import com.bookstore.modules.book.dto.response.BookDetailResponse;
 import java.util.List;
 
 public interface BookService {
-    PageResponse getAllBook(int pageNo, int pageSize, String search, String sortBy);
+    PageResponse getAllBook(Integer pageNo, Integer pageSize, String sortBy, String search, Integer minPrice, Integer maxPrice, Integer category);
 
     Book getBookById(Integer id);
     List<String> getBookImageByBookId(Integer id);

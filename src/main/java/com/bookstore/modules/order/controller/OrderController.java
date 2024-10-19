@@ -1,12 +1,15 @@
 package com.bookstore.modules.order.controller;
 
 import com.bookstore.common.dto.response.ResponseData;
+import com.bookstore.common.dto.response.ResponseSuccess;
 import com.bookstore.common.model.Book;
 import com.bookstore.common.model.Order;
 import com.bookstore.common.model.OrderItem;
 import com.bookstore.common.service.OrderService;
+import com.bookstore.common.util.OrderStatus;
 import com.bookstore.common.util.Uri;
-import com.bookstore.modules.order.dto.request.OrderItemRequest;
+import com.bookstore.modules.cart.dto.CartRequest;
+import com.bookstore.modules.order.dto.ListOrderResponse;
 import com.bookstore.modules.order.dto.request.OrderRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,16 +25,29 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderController {
     final OrderService orderService;
+    @GetMapping(value = Uri.ORDER)
+    public ResponseSuccess getOrderByShop(@RequestParam Integer shopId){
+        List<ListOrderResponse> orders = orderService.getOrderByShopId(shopId);
+        return new ResponseSuccess(HttpStatus.OK,"get order sucess",orders);
+    }
 
     @PostMapping(value = Uri.ORDER)
     public ResponseData CreateOrder(@RequestBody OrderRequest request){
         orderService.createOrder(request);
         return new ResponseData(HttpStatus.CREATED.value(),"Create order sucess");
     }
-    @PutMapping(value = Uri.ORDER)
-    public ResponseData UpdateStatusOrder(@RequestParam Integer orderId, @RequestBody String status){
+    @PatchMapping(value = Uri.ORDER)
+    public ResponseData UpdateStatusOrder(@RequestParam Integer orderId, @RequestParam Integer status){
         Order order = orderService.getOrderById(orderId);
-        order.setOrderStatus(status);
+        order.setOrderStatus(OrderStatus.fromCode(status));
+        if(OrderStatus.fromCode(status)=="Successful"){
+            List<OrderItem> orderItems = orderService.getAllOrderItemByOrderId(orderId);
+            orderItems.stream().forEach(orderItem -> {
+                Book book = orderItem.getBook();
+                book.setSoldQuantity(book.getSoldQuantity() + 1);
+                book.setCurrentQuantity(book.getCurrentQuantity()-1);
+            });
+        }
         orderService.save(order);
         return new ResponseData(HttpStatus.OK.value(),"Update status success");
     }
@@ -41,27 +57,5 @@ public class OrderController {
        orderService.delete(order);
         return new ResponseData(HttpStatus.OK.value(),"Delete order sucess");
     }
-    @GetMapping(value = {Uri.ORDER_ITEM})
-    public ResponseData RetrieveAllOrderItemsForOrder(@RequestParam Integer orderId){
-        List<OrderItem> orderItems = orderService.getAllOrderItemByOrderId(orderId);
-        List<OrderItemRequest> rs = orderItems.stream().map(item -> {
-            return OrderItemRequest.builder()
-                    .bookId(item.getId())
-                    .quantity(item.getQuantity())
-                    .build();
-        }).collect(Collectors.toList());
-        return new ResponseData(HttpStatus.OK.value(),"Delete order sucess", rs);
-    }
-    @PutMapping(value = {Uri.ORDER_CONFIRM})
-    public ResponseEntity<?> ConfirmOrderSuccess(@RequestParam Integer orderId){
-        List<OrderItem> orderItems = orderService.getAllOrderItemByOrderId(orderId);
-        orderItems.stream().forEach(orderItem -> {
-            Book book = orderItem.getBook();
-            book.setSoldQuantity(book.getSoldQuantity() + 1);
-        });
-        Order order = orderService.getOrderById(orderId);
-        order.setIsConfirm(true);
-        orderService.save(order);
-        return new ResponseEntity(HttpStatus.OK);
-    }
+
 }

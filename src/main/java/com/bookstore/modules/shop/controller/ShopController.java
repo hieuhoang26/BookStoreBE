@@ -29,7 +29,7 @@ public class ShopController {
     @GetMapping(value = {Uri.SHOP + "/{shopId}"})
     public ResponseData<?> RetrieveShopById(@PathVariable Integer shopId){
         Shop shop = shopService.getShopById(shopId);
-        return new ResponseData<>(HttpStatus.OK.value(),"Get Shop By Id", shopMapper.toDto(shop));
+        return new ResponseData<ShopDto>(HttpStatus.OK.value(),"Get Shop By Id",  shopMapper.toDto(shop));
     }
     @GetMapping(value = {Uri.SHOP })
     public ResponseData<?> RetrieveShopByUserId(@RequestParam Integer userId){

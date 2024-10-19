@@ -2,7 +2,7 @@ package com.bookstore.common.security.filter;
 
 
 import com.bookstore.common.security.service.JwtService;
-import com.bookstore.common.security.service.UserDetailServiceImp;
+import com.bookstore.common.security.service.Imp.UserDetailServiceImp;
 import com.bookstore.common.util.Uri;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

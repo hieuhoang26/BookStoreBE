@@ -16,4 +16,9 @@ public class BookImageServiceImpl implements BookImageService {
     public void deleteBookImage(Integer bookId) {
         bookImageRepository.deleteBookImageByBookId(bookId);
     }
+
+    @Override
+    public void deleteBookImageById(Integer imageId) {
+        bookImageRepository.deleteBookImageById(imageId);
+    }
 }

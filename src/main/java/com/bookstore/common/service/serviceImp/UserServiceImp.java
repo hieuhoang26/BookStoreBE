@@ -9,6 +9,7 @@ import com.bookstore.modules.order.dto.OrderDto;
 import com.bookstore.modules.user.dto.UserDto;
 import com.bookstore.modules.user.dto.request.UserUpdateDto;
 import com.bookstore.modules.user.mapper.UserMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +18,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,13 +70,51 @@ public class UserServiceImp implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
+    @Transactional
     @Override
     public void updateUser(Integer id,UserUpdateDto userUpdateDto) {
         User user = userRepository.findById(Long.valueOf(id)).orElse(null);
-        user.setUsername(userUpdateDto.getUsername());
-        user.setPassword(userUpdateDto.getPassword());
-        user.setEmail(userUpdateDto.getEmail());
-        user.setPhoneNumber(userUpdateDto.getPhoneNumber());
+
+        if (userUpdateDto.getUsername() != null) {
+            user.setUsername(userUpdateDto.getUsername());
+        }
+        if (userUpdateDto.getPassword() != null) {
+            user.setPassword(userUpdateDto.getPassword());
+        }
+        if (userUpdateDto.getEmail() != null) {
+            user.setEmail(userUpdateDto.getEmail());
+        }
+        if (userUpdateDto.getPhoneNumber() != null) {
+            user.setPhoneNumber(userUpdateDto.getPhoneNumber());
+        }
+        if (userUpdateDto.getDateOfBirth() != null) {
+            user.setDateOfBirth(userUpdateDto.getDateOfBirth());
+        }
+
+        // Handle avatar upload if not null (assuming you're handling avatar as well)
+        if (userUpdateDto.getAvatar() != null && !userUpdateDto.getAvatar().isEmpty()) {
+            // Handle avatar saving logic here
+        }
+
+        MultipartFile avatarFile = userUpdateDto.getAvatar();
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            try {
+                String uploadDir = "D:/BookStore/TestImg/";
+//                Path uploadPath = Paths.get(uploadDir);
+
+//                if (!Files.exists(uploadPath)) {
+//                    Files.createDirectories(uploadPath);
+//                }
+
+                String filename = id + "_" + avatarFile.getOriginalFilename();
+//                Path filePath = uploadPath.resolve(filename);
+                String filePath = uploadDir + filename;
+                avatarFile.transferTo(new File(filePath));
+                user.setAvatar(filename);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to save avatar file", e);
+            }
+        }
         userRepository.save(user);
 
         log.info("User updated successfully");
@@ -88,12 +133,12 @@ public class UserServiceImp implements UserService {
         List<OrderDto> rs = orders.stream().map(
             order -> OrderDto.builder()
                     .id(order.getId())
-                    .date(order.getOrderDate())
+//                    .date(order.getOrderDate())
                     .totalPrice(order.getTotalPrice())
                     .orderStatus(order.getOrderStatus())
                     .DeliveryAddress(order.getShoppingAddress())
-                    .isConfirm(order.getIsConfirm())
-                    .isEvaluate(order.getIsEvaluate())
+//                    .isConfirm(order.getIsConfirm())
+//                    .isEvaluate(order.getIsEvaluate())
                     .build()
         ).collect(Collectors.toList());
         return rs;

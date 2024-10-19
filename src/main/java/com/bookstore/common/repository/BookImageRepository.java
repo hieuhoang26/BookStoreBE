@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookImageRepository extends JpaRepository<BookImage,Long> {
-    void deleteBookImageByBookId(Integer id);
+    void deleteBookImageByBookId(Integer bookId);
+    void deleteBookImageById(Integer imageId);
 }

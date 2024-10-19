@@ -3,6 +3,7 @@ package com.bookstore.common.configuration;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
@@ -27,9 +28,18 @@ public class AppConfig implements WebMvcConfigurer {
         WebMvcConfigurer.super.addCorsMappings(registry);
         registry.addMapping("/**")
                 .allowCredentials(true)
-                .allowedOrigins("http://localhost:8080")
+//                .allowedOrigins("http://localhost:8080")
+                .allowedOrigins("http://127.0.0.1:3000","http://localhost:8080")
                 .allowedMethods("*")
                 .allowCredentials(true)
                 .allowedHeaders("*");
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:///D:/BookStore/TestImg/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
     }
 }

@@ -1,7 +1,7 @@
 package com.bookstore.common.security.configuration;
 
 import com.bookstore.common.security.filter.PreFilter;
-import com.bookstore.common.security.service.UserDetailServiceImp;
+import com.bookstore.common.security.service.Imp.UserDetailServiceImp;
 import com.bookstore.common.service.UserService;
 //import io.jsonwebtoken.security.Password;
 import com.bookstore.common.util.Uri;
@@ -9,12 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -62,12 +60,14 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // api whitelist and blacklist
         http.authorizeHttpRequests(request -> request
-                .requestMatchers(Uri.LOGIN,Uri.SIGNUP).permitAll()
+                .requestMatchers(Uri.LOGIN,Uri.SIGNUP,Uri.LOGOUT,Uri.REFRESH).permitAll()
                 .requestMatchers(HttpMethod.GET, Uri.USER).hasAnyRole("User", "Shop", "Admin") // need prefix ROLE_
+                .requestMatchers(Uri.CART).hasAnyRole("User", "Shop", "Admin")
                 .requestMatchers(Uri.SHOP).hasAnyRole( "Shop", "Admin")
                 .requestMatchers(Uri.BOOK_DETAIL,Uri.BOOK_SHOP, Uri.BOOK_PAGE, Uri.BOOKS_FILTER).permitAll()
                 .requestMatchers(Uri.CATEGORY).permitAll()
                 .requestMatchers(HttpMethod.GET,Uri.SHOP,Uri.SHOP_BOOK,Uri.SHOP_DETAIL).permitAll()
+                .requestMatchers("/images/**").permitAll()
 //                .requestMatchers("/**").permitAll()
                 .anyRequest().authenticated());
 

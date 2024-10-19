@@ -16,6 +16,6 @@ public class OrderDto implements Serializable {
     Double totalPrice;
     String DeliveryAddress;
     String orderStatus;
-    Boolean isConfirm;
-    Boolean isEvaluate;
+//    Boolean isConfirm;
+//    Boolean isEvaluate;
 }

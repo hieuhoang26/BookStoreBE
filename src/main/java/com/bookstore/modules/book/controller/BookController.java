@@ -31,21 +31,22 @@ public class BookController {
     private final ShopService shopService;
 
     @GetMapping(value = Uri.BOOK_PAGE)
-    public ResponseData<?> GetAllBook(@RequestParam(defaultValue = "0", required = false) int pageNo,
-                                   @RequestParam(defaultValue = "5", required = false) int pageSize,
-                                   @RequestParam( required = false) String sortBy,
-                                   @RequestParam( required = false) String search
-
-
-    ){
+    public ResponseData<?> GetAllBook(@RequestParam(defaultValue = "1", required = false) Integer pageNo,
+                                      @RequestParam(defaultValue = "2", required = false) Integer pageSize,
+                                      @RequestParam(required = false) String sortBy,
+                                      @RequestParam(required = false) String search,
+                                      @RequestParam(required = false) Integer minPrice,
+                                      @RequestParam(required = false) Integer maxPrice,
+                                      @RequestParam(required = false) Integer category
+    ) {
         log.info("Request get list of book and search with paging and sorting");
-        PageResponse<BookDto> rs =  bookService.getAllBook(pageNo, pageSize, search, sortBy);
+        PageResponse<BookDto> rs = bookService.getAllBook(pageNo, pageSize, sortBy,search,minPrice , maxPrice, category);
         List<BookDto> bookDtos = (List<BookDto>) rs.getItems();
         bookDtos.forEach(bookDto -> {
             List<String> image = bookService.getBookImageByBookId(bookDto.getId());
             bookDto.setImagePath(image);
         });
-        return new ResponseData<>(HttpStatus.OK.value(), "users",rs);
+        return new ResponseData<>(HttpStatus.OK.value(), "users", rs);
 
 
     }
@@ -67,30 +68,33 @@ public class BookController {
     }
 
     @GetMapping(value = Uri.BOOK_DETAIL)
-    public ResponseData GetBookDetailById(@PathVariable Integer id){
+    public ResponseData GetBookDetailById(@PathVariable Integer id) {
         BookDetailResponse res = bookService.getBookDetailByBookId(id);
         return new ResponseData(HttpStatus.OK.value(), "BookDetail By Id", res);
 
     }
 
     @GetMapping(value = Uri.BOOK_SHOP)
-    public ResponseData GetAllBookForShopId(@PathVariable Integer id){
+    public ResponseData GetAllBookForShopId(@PathVariable Integer id) {
         List<BookDto> res = bookService.getAllBookByShopId(id);
         return new ResponseData(HttpStatus.OK.value(), "All book for shop", res);
 
     }
+
     @PostMapping(value = Uri.BOOK)
-    public ResponseData CreateBook(@RequestParam Integer shopId,@Valid @ModelAttribute CreateBookRequest request){
-        bookService.createBook(shopId,request);
+//    public ResponseData CreateBook(@RequestParam Integer shopId, @Valid @ModelAttribute CreateBookRequest request) {
+    public ResponseData CreateBook(@RequestParam Integer shopId, @ModelAttribute CreateBookRequest request) {
+        bookService.createBook(shopId, request);
         return new ResponseData(HttpStatus.CREATED.value(), "Create Book Success");
     }
+
     @PutMapping(value = Uri.BOOK)
-    public ResponseData UpdateBook(@RequestParam Integer bookId,@Valid @ModelAttribute CreateBookRequest request){
-        bookService.updateBook(bookId,request);
+    public ResponseData UpdateBook(@RequestParam Integer bookId, @Valid @ModelAttribute CreateBookRequest request) {
+        bookService.updateBook(bookId, request);
         return new ResponseData(HttpStatus.OK.value(), "Update Book Success");
     }
     @DeleteMapping(value = Uri.BOOK)
-    public ResponseData UpdateBook(@RequestParam Integer bookId){
+    public ResponseData DeleteBook(@RequestParam Integer bookId) {
         bookService.deleteBook(bookId);
         return new ResponseData(HttpStatus.OK.value(), "Delete Book Success");
     }
@@ -98,7 +102,6 @@ public class BookController {
     /* <----------------------- Uri.BOOKS_REVIEWS -------------------> */
 
     /* <----------------------- Uri.BOOKS_RATES ---------------------> */
-
 
 
 }
